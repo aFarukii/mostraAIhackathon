@@ -30,7 +30,6 @@ Bu suite üç ana bileşenden oluşmaktadır:
 - **🎯 Segmentasyon**: Machine learning ile otomatik kullanıcı grupları
 - **💰 Zenginlik Skoru**: Mekan tercihlerine göre gelir seviyesi tahmini
 - **🗺️ Görselleştirme**: İnteraktif haritalar ve comprehensive raporlar
-- **⚡ Memory Efficient**: Büyük veri setleri için optimize edilmiş
 
 ## 🔧 Kurulum
 
@@ -205,7 +204,7 @@ wealth_map.save("wealth_map.html")
 ### MapinSegment Kodlaması
 - **D**: Bar/Pub (örn: D3-A)
 - **R**: Restoran (örn: R2-B)  
-- **H**: Otel (örn: H4-A)
+- **H**: Otel (örn: H2)
 - **Sayı**: Seviye (1-5)
 - **Harf**: Kalite (A/B/C)
 
