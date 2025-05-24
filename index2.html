@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kahve & Pet Odaklı Veri Analizi Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            border-radius: 15px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border: 3px solid transparent;
+            background-clip: padding-box;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+        }
+
+        .stat-value {
+            font-size: 2.2em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            color: #7f8c8d;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chart-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #ff9a9e, #fecfef, #fecfef, #ff9a9e);
+        }
+
+        .chart-title {
+            font-size: 1.4em;
+            margin-bottom: 20px;
+            color: #2c3e50;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 400px;
+        }
+
+        .combinations-section {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            margin-top: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .combinations-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #a8edea, #fed6e3);
+        }
+
+        .combinations-title {
+            font-size: 1.8em;
+            margin-bottom: 25px;
+            color: #2c3e50;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .combinations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .combination-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            transition: transform 0.3s ease;
+        }
+
+        .combination-card:hover {
+            transform: scale(1.05);
+        }
+
+        .combination-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .combination-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        @media (max-width: 768px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>☕ Kahve & Pet Odaklı Veri Analizi 🐾</h1>
+            <p>Detaylı İstatistik ve Persona Analizi Dashboard</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">70,362</div>
+                <div class="stat-label">Toplam Cihaz Sayısı</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">3,645</div>
+                <div class="stat-label">Yüksek Güvenilir Cihaz</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">3.6</div>
+                <div class="stat-label">Ortalama Zenginlik Skoru</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">72.27</div>
+                <div class="stat-label">En Yüksek Zenginlik Skoru</div>
+            </div>
+        </div>
+
+        <div class="charts-grid">
+            <div class="chart-container">
+                <div class="chart-title">☕ Kahve Persona Dağılımı</div>
+                <div class="chart-wrapper">
+                    <canvas id="kahveChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">🐾 Hayvan Persona Dağılımı</div>
+                <div class="chart-wrapper">
+                    <canvas id="hayvanChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">💰 Zenginlik Segmenti Dağılımı</div>
+                <div class="chart-wrapper">
+                    <canvas id="zenginlikChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">🍺 Bar Persona Dağılımı</div>
+                <div class="chart-wrapper">
+                    <canvas id="barChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">🌟 Yaşam Tarzı Dağılımı</div>
+                <div class="chart-wrapper">
+                    <canvas id="yasamChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">🔍 Keşif Persona Dağılımı</div>
+                <div class="chart-wrapper">
+                    <canvas id="kesifChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="combinations-section">
+            <div class="combinations-title">🎯 Özel Kombinasyonlar ve İstatistikler</div>
+            <div class="combinations-grid">
+                <div class="combination-card">
+                    <div class="combination-value">9</div>
+                    <div class="combination-label">Zengin Kahve Bağımlıları</div>
+                </div>
+                <div class="combination-card">
+                    <div class="combination-value">8</div>
+                    <div class="combination-label">Zengin Hayvan Tutkunu</div>
+                </div>
+                <div class="combination-card">
+                    <div class="combination-value">15,487</div>
+                    <div class="combination-label">Kahve Sever + Pet Sahibi</div>
+                </div>
+                <div class="combination-card">
+                    <div class="combination-value">1</div>
+                    <div class="combination-label">Lüks Yaşam + Kahve Bağımlısı</div>
+                </div>
+                <div class="combination-card">
+                    <div class="combination-value">6.74</div>
+                    <div class="combination-label">Kahve Severler Ort. Zenginlik</div>
+                </div>
+                <div class="combination-card">
+                    <div class="combination-value">4.4</div>
+                    <div class="combination-label">Pet Sahipleri Ort. Zenginlik</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Grafik renk paletleri
+        const colorPalettes = {
+            kahve: ['#8B4513', '#D2691E', '#CD853F', '#DEB887'],
+            hayvan: ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4'],
+            zenginlik: ['#FFD700', '#FF8C00', '#32CD32'],
+            bar: ['#8A2BE2', '#FF1493', '#00CED1', '#FF6347'],
+            yasam: ['#2E8B57', '#4169E1', '#FF69B4', '#FFD700'],
+            kesif: ['#20B2AA', '#FF4500']
+        };
+
+        // Kahve Persona Grafiği
+        const kahveCtx = document.getElementById('kahveChart').getContext('2d');
+        new Chart(kahveCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Kahve İçmez', 'Ara Sıra İçer', 'Kahve Bağımlısı', 'Kahve Sever'],
+                datasets: [{
+                    data: [34484, 18519, 10872, 6487],
+                    backgroundColor: colorPalettes.kahve,
+                    borderWidth: 3,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            font: { size: 12 }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const value = context.parsed;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((value / total) * 100).toFixed(1);
+                                return `${context.label}: ${value.toLocaleString()} (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Hayvan Persona Grafiği
+        const hayvanCtx = document.getElementById('hayvanChart').getContext('2d');
+        new Chart(hayvanCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Hayvan Tutkunu', 'Pet Sahibi', 'Aktif Pet Sahibi', 'Pet Sahibi Değil'],
+                datasets: [{
+                    data: [39014, 11573, 11101, 8674],
+                    backgroundColor: colorPalettes.hayvan,
+                    borderRadius: 8,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const value = context.parsed.y;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((value / total) * 100).toFixed(1);
+                                return `${value.toLocaleString()} (${percentage}%)`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Zenginlik Segmenti Grafiği
+        const zenginlikCtx = document.getElementById('zenginlikChart').getContext('2d');
+        new Chart(zenginlikCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Ekonomik Segment', 'Orta Segment', 'Üst Segment'],
+                datasets: [{
+                    data: [70297, 56, 9],
+                    backgroundColor: colorPalettes.zenginlik,
+                    borderWidth: 3,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            font: { size: 12 }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const value = context.parsed;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((value / total) * 100).toFixed(1);
+                                return `${context.label}: ${value.toLocaleString()} (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Bar Persona Grafiği
+        const barCtx = document.getElementById('barChart').getContext('2d');
+        new Chart(barCtx, {
+            type: 'polarArea',
+            data: {
+                labels: ['Bar Gitmez', 'Sosyal İçici', 'Bar Sever', 'Gece Hayatı Uzmanı'],
+                datasets: [{
+                    data: [65929, 3119, 706, 608],
+                    backgroundColor: colorPalettes.bar,
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            font: { size: 12 }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const value = context.parsed;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((value / total) * 100).toFixed(1);
+                                return `${context.label}: ${value.toLocaleString()} (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Yaşam Tarzı Grafiği
+        const yasamCtx = document.getElementById('yasamChart').getContext('2d');
+        new Chart(yasamCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Dengeli Yaşam', 'Gece Kuşu', 'Gurme', 'Lüks Yaşam'],
+                datasets: [{
+                    data: [67372, 2615, 371, 4],
+                    backgroundColor: colorPalettes.yasam,
+                    borderWidth: 3,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            font: { size: 12 }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const value = context.parsed;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((value / total) * 100).toFixed(1);
+                                return `${context.label}: ${value.toLocaleString()} (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Keşif Persona Grafiği
+        const kesifCtx = document.getElementById('kesifChart').getContext('2d');
+        new Chart(kesifCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Rutin Sever', 'Keşif Sever'],
+                datasets: [{
+                    data: [69757, 605],
+                    backgroundColor: colorPalettes.kesif,
+                    borderRadius: 8,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const value = context.parsed.y;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((value / total) * 100).toFixed(1);
+                                return `${value.toLocaleString()} (${percentage}%)`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Animasyon efektleri
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.stat-card, .chart-container, .combination-card');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '0';
+                        entry.target.style.transform = 'translateY(20px)';
+                        entry.target.style.transition = 'all 0.6s ease';
+                        
+                        setTimeout(() => {
+                            entry.target.style.opacity = '1';
+                            entry.target.style.transform = 'translateY(0)';
+                        }, 100);
+                    }
+                });
+            });
+
+            cards.forEach(card => {
+                observer.observe(card);
+            });
+        });
+    </script>
+</body>
+</html>

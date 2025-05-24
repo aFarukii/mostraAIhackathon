@@ -1,0 +1,47 @@
+Kategori,Değer
+Genel İstatistikler (Kahve & Pet Odaklı),
+Toplam cihaz sayısı,70362
+Yüksek güvenilir cihaz (>80),3645
+Ortalama zenginlik skoru,3.6
+En yüksek zenginlik skoru,72.27
+,
+Zenginlik Segmenti Dağılımı (Kahve & Pet Odaklı),
+Ekonomik Segment,70297 (99.9%)
+Orta Segment,56 (0.1%)
+Üst Segment,9 (0.0%)
+,
+Kahve Persona Dağılımı,
+Kahve İçmez,34484 (49.0%)
+Ara Sıra İçer,18519 (26.3%)
+Kahve Bağımlısı,10872 (15.5%)
+Kahve Sever,6487 (9.2%)
+,
+Bar Persona Dağılımı,
+Bar Gitmez,65929 (93.7%)
+Sosyal İçici,3119 (4.4%)
+Bar Sever,706 (1.0%)
+Gece Hayatı Uzmanı,608 (0.9%)
+,
+Keşif Persona Dağılımı,
+Rutin Sever,69757 (99.1%)
+Keşif Sever,605 (0.9%)
+,
+Hayvan Persona Dağılımı,
+Hayvan Tutkunu,39014 (55.4%)
+Pet Sahibi,11573 (16.4%)
+Aktif Pet Sahibi,11101 (15.8%)
+Pet Sahibi Değil,8674 (12.3%)
+,
+Yaşam_Tarzı Persona Dağılımı,
+Dengeli Yaşam,67372 (95.8%)
+Gece Kuşu,2615 (3.7%)
+Gurme,371 (0.5%)
+Lüks Yaşam,4 (0.0%)
+,
+Kahve & Pet Odaklı Kombinasyonlar,
+Zengin kahve bağımlıları,9
+Zengin hayvan tutkunu,8
+Kahve sever + Pet sahibi,15487
+Lüks yaşam + Kahve bağımlısı,1
+Kahve severler ort. zenginlik skoru,6.74
+Pet sahipleri ort. zenginlik skoru,4.4

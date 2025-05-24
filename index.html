@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Veri Analiz Platformu</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .upload-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .file-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px dashed #667eea;
+            border-radius: 10px;
+            background: #f8f9ff;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-input:hover {
+            border-color: #764ba2;
+            background: #f0f2ff;
+        }
+
+        .filters-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .filters-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .filter-group {
+            background: #f8f9ff;
+            padding: 15px 20px;
+            border-radius: 8px;
+            border: 1px solid #e1e5ff;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .filter-group h3 {
+            color: #667eea;
+            margin: 0;
+            font-size: 0.95em;
+            min-width: 150px;
+            flex-shrink: 0;
+        }
+
+        .filter-control {
+            margin: 0;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .filter-control label {
+            margin: 0;
+            font-size: 0.85em;
+            min-width: 80px;
+            flex-shrink: 0;
+        }
+
+        .filter-control-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .filter-control select,
+        .filter-control input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 13px;
+            transition: border-color 0.3s ease;
+            flex: 1;
+            max-width: 300px;
+        }
+
+        .filter-control select:focus,
+        .filter-control input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+        }
+
+        .range-input {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex: 1;
+        }
+
+        .range-input input {
+            flex: 1;
+            max-width: 120px;
+        }
+
+        .range-input span {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .results-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .stat-card h3 {
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+
+        .stat-card p {
+            opacity: 0.9;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .data-table th {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+
+        .data-table tr:hover {
+            background: #f8f9ff;
+        }
+
+        .chart-container {
+            margin: 30px 0;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .clear-filters {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .clear-filters:hover {
+            background: #ff5252;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+            font-size: 1.2em;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-style: italic;
+        }
+
+        @media (max-width: 768px) {
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .container {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Veri Analiz Platformu</h1>
+            <p>CSV verilerinizi yükleyip detaylı analiz yapın</p>
+        </div>
+
+        <div class="upload-section">
+            <div class="file-input" onclick="document.getElementById('csvFile').click()">
+                <input type="file" id="csvFile" accept=".csv" style="display: none;">
+                <h3>📁 CSV Dosyanızı Seçin</h3>
+                <p>Dosyayı buraya sürükleyip bırakın veya tıklayın</p>
+            </div>
+        </div>
+
+        <div class="filters-section" id="filtersSection" style="display: none;">
+            <button class="clear-filters" onclick="clearAllFilters()">🗑️ Tüm Filtreleri Temizle</button>
+            <div class="filters-grid" id="filtersGrid">
+                <!-- Filtreler buraya dinamik olarak eklenecek -->
+            </div>
+        </div>
+
+        <div class="results-section" id="resultsSection" style="display: none;">
+            <div class="stats-grid" id="statsGrid">
+                <!-- İstatistikler buraya eklenecek -->
+            </div>
+            
+            <div class="chart-container">
+                <canvas id="dataChart"></canvas>
+            </div>
+
+            <div id="dataTableContainer">
+                <!-- Tablo buraya eklenecek -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let originalData = [];
+        let filteredData = [];
+        let currentChart = null;
+
+        // Dosya yükleme
+        document.getElementById('csvFile').addEventListener('change', handleFile);
+
+        // Drag & Drop
+        const fileInput = document.querySelector('.file-input');
+        fileInput.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileInput.style.background = '#e8f2ff';
+        });
+
+        fileInput.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            fileInput.style.background = '#f8f9ff';
+        });
+
+        fileInput.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileInput.style.background = '#f8f9ff';
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile({ target: { files: files } });
+            }
+        });
+
+        function handleFile(event) {
+            const file = event.target.files[0];
+            if (file && file.type === 'text/csv') {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    parseCSV(e.target.result);
+                };
+                reader.readAsText(file);
+            } else {
+                alert('Lütfen geçerli bir CSV dosyası seçin.');
+            }
+        }
+
+        function parseCSV(csvText) {
+            Papa.parse(csvText, {
+                header: true,
+                dynamicTyping: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    originalData = results.data.filter(row => 
+                        Object.values(row).some(val => val !== null && val !== '')
+                    );
+                    filteredData = [...originalData];
+                    
+                    if (originalData.length > 0) {
+                        setupFilters();
+                        updateResults();
+                        document.getElementById('filtersSection').style.display = 'block';
+                        document.getElementById('resultsSection').style.display = 'block';
+                    }
+                },
+                error: function(error) {
+                    alert('CSV dosyası okunurken hata oluştu: ' + error.message);
+                }
+            });
+        }
+
+        function setupFilters() {
+            const filtersGrid = document.getElementById('filtersGrid');
+            filtersGrid.innerHTML = '';
+
+            const headers = Object.keys(originalData[0]);
+            
+            headers.forEach(header => {
+                const values = originalData.map(row => row[header]).filter(val => val !== null && val !== '');
+                const uniqueValues = [...new Set(values)].sort();
+                const isNumeric = values.every(val => !isNaN(val) && val !== '');
+
+                const filterGroup = document.createElement('div');
+                filterGroup.className = 'filter-group';
+
+                if (isNumeric) {
+                    const min = Math.min(...values);
+                    const max = Math.max(...values);
+                    
+                    filterGroup.innerHTML = `
+                        <h3>${header}</h3>
+                        <div class="filter-control">
+                            <label>Aralık:</label>
+                            <div class="range-input">
+                                <input type="number" id="min_${header}" placeholder="Min" min="${min}" max="${max}" step="0.1">
+                                <span>-</span>
+                                <input type="number" id="max_${header}" placeholder="Max" min="${min}" max="${max}" step="0.1">
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    const options = uniqueValues.map(val => `<option value="${val}">${val}</option>`).join('');
+                    filterGroup.innerHTML = `
+                        <h3>${header}</h3>
+                        <div class="filter-control">
+                            <label>Seçim:</label>
+                            <select id="select_${header}" multiple>
+                                <option value="">Tümü</option>
+                                ${options}
+                            </select>
+                        </div>
+                    `;
+                }
+
+                filtersGrid.appendChild(filterGroup);
+
+                // Event listeners ekle
+                if (isNumeric) {
+                    document.getElementById(`min_${header}`).addEventListener('input', applyFilters);
+                    document.getElementById(`max_${header}`).addEventListener('input', applyFilters);
+                } else {
+                    document.getElementById(`select_${header}`).addEventListener('change', applyFilters);
+                }
+            });
+        }
+
+        function applyFilters() {
+            filteredData = originalData.filter(row => {
+                return Object.keys(row).every(header => {
+                    const value = row[header];
+                    const isNumeric = !isNaN(value) && value !== '';
+
+                    if (isNumeric) {
+                        const minInput = document.getElementById(`min_${header}`);
+                        const maxInput = document.getElementById(`max_${header}`);
+                        
+                        if (minInput && maxInput) {
+                            const min = minInput.value !== '' ? parseFloat(minInput.value) : -Infinity;
+                            const max = maxInput.value !== '' ? parseFloat(maxInput.value) : Infinity;
+                            return value >= min && value <= max;
+                        }
+                    } else {
+                        const selectInput = document.getElementById(`select_${header}`);
+                        if (selectInput && selectInput.selectedOptions.length > 0) {
+                            const selectedValues = Array.from(selectInput.selectedOptions).map(option => option.value);
+                            if (selectedValues.includes('')) return true;
+                            return selectedValues.includes(String(value));
+                        }
+                    }
+                    return true;
+                });
+            });
+
+            updateResults();
+        }
+
+        function updateResults() {
+            updateStats();
+            updateChart();
+            updateTable();
+        }
+
+        function updateStats() {
+            const statsGrid = document.getElementById('statsGrid');
+            const totalRecords = filteredData.length;
+            const originalRecords = originalData.length;
+
+            // Numerik kolonları bul
+            const numericColumns = Object.keys(originalData[0]).filter(key => {
+                return originalData.every(row => !isNaN(row[key]) && row[key] !== '');
+            });
+
+            let statsHTML = `
+                <div class="stat-card">
+                    <h3>${totalRecords}</h3>
+                    <p>Toplam Kayıt</p>
+                </div>
+                <div class="stat-card">
+                    <h3>${originalRecords}</h3>
+                    <p>Orijinal Kayıt</p>
+                </div>
+            `;
+
+            if (numericColumns.length > 0) {
+                const firstNumericCol = numericColumns[0];
+                const values = filteredData.map(row => row[firstNumericCol]).filter(val => !isNaN(val));
+                const average = values.length > 0 ? (values.reduce((a, b) => a + b, 0) / values.length).toFixed(2) : 0;
+
+                statsHTML += `
+                    <div class="stat-card">
+                        <h3>${average}</h3>
+                        <p>${firstNumericCol} Ortalama</p>
+                    </div>
+                `;
+            }
+
+            statsGrid.innerHTML = statsHTML;
+        }
+
+        function updateChart() {
+            const ctx = document.getElementById('dataChart').getContext('2d');
+            
+            if (currentChart) {
+                currentChart.destroy();
+            }
+
+            // İlk numerik kolonu bul
+            const numericColumns = Object.keys(originalData[0]).filter(key => {
+                return originalData.every(row => !isNaN(row[key]) && row[key] !== '');
+            });
+
+            if (numericColumns.length === 0) return;
+
+            const column = numericColumns[0];
+            const values = filteredData.map(row => row[column]);
+            
+            // Histogram verileri hazırla
+            const bins = 10;
+            const min = Math.min(...values);
+            const max = Math.max(...values);
+            const binSize = (max - min) / bins;
+            
+            const histogram = new Array(bins).fill(0);
+            const labels = [];
+            
+            for (let i = 0; i < bins; i++) {
+                const start = min + i * binSize;
+                const end = start + binSize;
+                labels.push(`${start.toFixed(1)}-${end.toFixed(1)}`);
+                
+                values.forEach(value => {
+                    if (value >= start && (value < end || i === bins - 1)) {
+                        histogram[i]++;
+                    }
+                });
+            }
+
+            currentChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: column + ' Dağılımı',
+                        data: histogram,
+                        backgroundColor: 'rgba(102, 126, 234, 0.7)',
+                        borderColor: 'rgba(102, 126, 234, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: column + ' Histogram'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateTable() {
+            const container = document.getElementById('dataTableContainer');
+            
+            if (filteredData.length === 0) {
+                container.innerHTML = '<div class="no-data">Filtre kriterlerinize uygun veri bulunamadı.</div>';
+                return;
+            }
+
+            const headers = Object.keys(filteredData[0]);
+            const maxRows = 100; // Performance için limit
+            const displayData = filteredData.slice(0, maxRows);
+
+            let tableHTML = `
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            ${headers.map(header => `<th>${header}</th>`).join('')}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${displayData.map(row => `
+                            <tr>
+                                ${headers.map(header => `<td>${row[header] || ''}</td>`).join('')}
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+
+            if (filteredData.length > maxRows) {
+                tableHTML += `<p style="text-align: center; margin-top: 10px; color: #666;">
+                    İlk ${maxRows} kayıt gösteriliyor (Toplam: ${filteredData.length})
+                </p>`;
+            }
+
+            container.innerHTML = tableHTML;
+        }
+
+        function clearAllFilters() {
+            // Tüm input ve select elemanlarını temizle
+            document.querySelectorAll('input[type="number"]').forEach(input => input.value = '');
+            document.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
+            
+            // Filtreleri yeniden uygula
+            filteredData = [...originalData];
+            updateResults();
+        }
+    </script>
+</body>
+</html>
