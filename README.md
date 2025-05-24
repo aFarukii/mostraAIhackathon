@@ -1,4 +1,4 @@
-# Mobility & Spatial Analysis Suite 🚀
+MostraAI Hackathon Data Analizi
 
 Kapsamlı mobil veri analizi ve mekan-kullanıcı etkileşim analizi için geliştirilmiş entegre Python paket suiti. Büyük veri setleriyle çalışırken performans odaklı çözümler sunar ve kullanıcı davranış profillerini detaylı analiz eder.
 
